@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<!--
+  ==================================================================
+  tapmad · Affiliate Onboarding — SINGLE-FILE WEBSITE (all 4 steps)
+  ------------------------------------------------------------------
+  One page, four screens that flow into each other with smooth
+  in-page transitions (NO full-page reloads) — feels like one site.
+
+  FLOW:
+    1) Campaign Landing  → tap Continue
+    2) Number Verified   → auto-advances after 5s
+    3) Set PIN           → tap Continue → success (2s) → advance
+    4) Watch & Win       → play video → 30s timer → Spin & Win
+                           (always wins a free tapmad subscription)
+
+  ┌── EASY EDITS (all in the CONFIG block near the bottom) ─────────┐
+  │  PRIZE_AMOUNT · VERIFY_MS(5000) · SUCCESS_MS(2000)             │
+  │  WATCH_SECONDS(30) · VIDEO_SRC · SEGMENTS · WIN_INDEX          │
+  └────────────────────────────────────────────────────────────────┘
+  ==================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>tapmad · Win Big</title>
+<style>
+  :root{
+    --brand:#16a34a;--brand-bright:#22e06a;--brand-deep:#0b7a37;
+    --gold:#ffd54f;--gold-deep:#f0a500;
+    --bg:#050805;--card:#0f140f;--ink:#fff;--ink-dim:#c7d1c7;--radius:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 700px at 50% -5%, rgba(34,224,106,.20), transparent 60%),
+      radial-gradient(800px 500px at 50% 110%, rgba(240,165,0,.08), transparent 60%),
+      var(--bg);
+    color:var(--ink);min-height:100dvh;display:flex;justify-content:center;overflow-x:hidden;
+  }
+  .phone{width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;position:relative;}
+
+  /* fixed browser chrome — URL updates per screen to mimic real navigation */
+  .browserbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#111;color:#9aa;font-size:13px;border-bottom:1px solid #1c1c1c;flex:none;}
+  .browserbar .url{flex:1;background:#000;border-radius:20px;padding:6px 12px;color:#c9c9c9;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+
+  /* ---------- screen switching ---------- */
+  .screens{flex:1;position:relative;overflow:hidden;}
+  .screen{
+    position:absolute;inset:0;overflow-y:auto;
+    display:flex;flex-direction:column;
+    opacity:0;transform:translateX(30px);pointer-events:none;
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .screen.active{opacity:1;transform:none;pointer-events:auto;}
+  .screen.leaving{opacity:0;transform:translateX(-30px);pointer-events:none;}
+
+  /* ---------- shared: progress bar ---------- */
+  .steps{margin:16px 14px 0;background:#0c110c;border:1px solid #1d271d;border-radius:14px;padding:16px 14px 12px;flex:none;}
+  .steps .caption{font-size:13px;color:var(--ink-dim);margin-bottom:14px;font-weight:600;}
+  .steps .caption b{color:var(--brand-bright);}
+  .track{display:flex;align-items:center;justify-content:space-between;position:relative;}
+  .track::before{content:"";position:absolute;left:24px;right:24px;top:16px;height:3px;background:#26332680;border-radius:3px;}
+  .track .fill{position:absolute;left:24px;top:16px;height:3px;background:var(--brand-bright);border-radius:3px;transition:width .5s;}
+  .node{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px;flex:1;}
+  .bubble{width:34px;height:34px;border-radius:50%;background:#1a231a;border:2px solid #2c3a2c;display:flex;align-items:center;justify-content:center;font-size:15px;color:#7c887c;font-weight:800;}
+  .node.done .bubble{background:var(--brand-bright);border-color:var(--brand-bright);color:#04240f;}
+  .node.current .bubble{border-color:var(--brand-bright);color:var(--brand-bright);box-shadow:0 0 0 4px rgba(34,224,106,.18);background:#12240f;}
+  .node .lbl{font-size:11px;color:#8a948a;font-weight:600;}
+  .node.done .lbl,.node.current .lbl{color:#e7f4e7;}
+
+  /* ---------- shared buttons ---------- */
+  .cta{height:54px;border:0;border-radius:12px;background:linear-gradient(90deg,var(--brand-deep),var(--brand),var(--brand-bright));color:#fff;font-size:18px;font-weight:800;letter-spacing:.5px;cursor:pointer;box-shadow:0 8px 24px rgba(22,163,74,.45);transition:transform .1s;}
+  .cta:active{transform:scale(.98);}
+
+  /* =============== SCREEN 1 — Landing =============== */
+  .s1 .scroll{padding-bottom:24px;}
+  .banner{position:relative;margin:14px;border-radius:var(--radius);
+    background:radial-gradient(600px 300px at 50% 0%, rgba(255,213,79,.18), transparent 70%),linear-gradient(180deg,#0d2b16,#071a0d 90%);
+    border:1px solid rgba(34,224,106,.35);padding:26px 18px 30px;text-align:center;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  .flag{position:absolute;top:12px;left:14px;font-size:22px;}
+  .fireworks{position:absolute;top:10px;right:14px;font-size:22px;}
+  .congrats{display:inline-block;background:linear-gradient(90deg,var(--brand-deep),var(--brand-bright));color:#fff;font-weight:800;letter-spacing:2px;font-size:14px;padding:6px 18px;border-radius:30px;text-transform:uppercase;box-shadow:0 4px 14px rgba(34,224,106,.35);}
+  .won-label{margin-top:16px;font-size:13px;letter-spacing:4px;color:var(--gold);font-weight:700;text-transform:uppercase;}
+  .prize-amount{font-size:62px;line-height:1;font-weight:900;margin-top:4px;background:linear-gradient(180deg,#fff7d6,var(--gold),var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 4px 24px rgba(240,165,0,.35);}
+  .prize-cur{font-size:30px;font-weight:900;color:var(--brand-bright);letter-spacing:3px;margin-top:2px;}
+  .prize-sub{font-size:11px;letter-spacing:2px;color:var(--ink-dim);margin-top:6px;text-transform:uppercase;}
+  .lucky{margin-top:18px;display:inline-flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);border:1px solid rgba(255,213,79,.4);color:var(--gold);font-weight:700;font-size:13px;padding:8px 16px;border-radius:30px;}
+  .cash-emojis{font-size:40px;margin-top:14px;letter-spacing:6px;}
+  .pay{margin:4px 14px 0;}
+  .pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px;}
+  .pm{background:#fff;border-radius:12px;height:52px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;cursor:pointer;position:relative;border:3px solid transparent;transition:.15s;}
+  .pm.jazzcash{color:#c1272d;} .pm.jazzcash b{color:#e30613;}
+  .pm.easypaisa{color:#0aa14b;} .pm.upaisa{color:#e8730f;}
+  .pm.active{border-color:var(--brand-bright);box-shadow:0 0 0 4px rgba(34,224,106,.25);}
+  .pm .tick{position:absolute;top:-8px;right:-8px;background:var(--brand-bright);color:#04240f;width:22px;height:22px;border-radius:50%;display:none;align-items:center;justify-content:center;font-size:13px;font-weight:900;}
+  .pm.active .tick{display:flex;}
+  .phone-row{display:flex;align-items:center;background:#fff;border-radius:12px;margin-top:12px;overflow:hidden;height:52px;}
+  .phone-row .pill{display:flex;align-items:center;gap:6px;padding:0 12px;color:#333;font-weight:700;font-size:13px;border-right:1px solid #e5e5e5;height:100%;}
+  .phone-row .pill .mini{width:26px;height:20px;border-radius:4px;background:#e30613;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .phone-row input{flex:1;border:0;outline:0;font-size:16px;color:#111;padding:0 12px;background:transparent;}
+  .s1 .cta{width:calc(100% - 28px);margin:14px;}
+  .terms{display:flex;align-items:flex-start;gap:8px;margin:0 16px;font-size:12px;color:var(--ink-dim);}
+  .terms input{margin-top:2px;accent-color:var(--brand-bright);width:16px;height:16px;}
+  .terms a{color:var(--brand-bright);text-decoration:underline;}
+  .already{text-align:center;font-size:13px;margin:12px 0 4px;color:#ddd;font-weight:700;}
+  .already a{color:var(--brand-bright);text-decoration:none;font-weight:800;}
+  .disclaimer{margin:8px 16px 20px;text-align:center;font-size:11px;line-height:1.5;color:#8a948a;}
+
+  /* =============== SCREEN 2 — Verified =============== */
+  .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 24px;}
+  .check-wrap{position:relative;width:130px;height:130px;margin-bottom:8px;}
+  .ring{transform:rotate(-90deg);}
+  .ring .bg{stroke:#20301f;}
+  .ring .fg{stroke:var(--brand-bright);stroke-linecap:round;transition:stroke-dashoffset .1s linear;filter:drop-shadow(0 0 6px rgba(34,224,106,.5));}
+  .check{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;color:var(--brand-bright);animation:pop .5s cubic-bezier(.2,1.4,.4,1);}
+  @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+  .s2 h1{font-size:26px;font-weight:900;margin-top:10px;}
+  .s2 .subtitle{color:var(--ink-dim);font-size:15px;margin-top:8px;line-height:1.5;max-width:280px;}
+  .loader-row{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .coin{font-size:34px;animation:flip 1.1s linear infinite;filter:drop-shadow(0 4px 8px rgba(240,165,0,.4));}
+  @keyframes flip{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+  .loading-text{font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.5px;}
+  .dots::after{content:"";animation:dots 1.2s steps(4,end) infinite;}
+  @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}100%{content:""}}
+  .countdown{font-size:12px;color:#8a948a;margin-top:2px;}
+  .countdown b{color:var(--brand-bright);}
+
+  /* =============== SCREEN 3 — Set PIN =============== */
+  .appbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #161c16;flex:none;}
+  .appbar .logo{font-size:22px;font-weight:900;} .appbar .logo b{color:var(--brand-bright);}
+  .appbar .right{display:flex;align-items:center;gap:14px;color:#cfd;font-size:14px;}
+  .form{padding:22px 22px 30px;flex:1;display:flex;flex-direction:column;}
+  .form h2{text-align:center;font-size:22px;font-weight:900;margin-bottom:22px;}
+  .field-label{text-align:center;color:var(--ink-dim);font-size:14px;margin:8px 0 10px;}
+  .name-input{width:100%;height:52px;border-radius:12px;border:1px solid #2a352a;background:#0c110c;color:#fff;font-size:16px;padding:0 16px;outline:none;}
+  .name-input:focus{border-color:var(--brand-bright);box-shadow:0 0 0 3px rgba(34,224,106,.2);}
+  .pin-row{display:flex;justify-content:center;gap:12px;}
+  .pin-box{width:56px;height:60px;border-radius:12px;border:1px solid #2a352a;background:#0c110c;color:#fff;font-size:26px;font-weight:800;text-align:center;outline:none;}
+  .pin-box:focus{border-color:var(--brand-bright);box-shadow:0 0 0 3px rgba(34,224,106,.2);}
+  .err{color:#ff6b6b;font-size:13px;text-align:center;min-height:18px;margin-top:12px;}
+  .s3 .cta{margin-top:auto;border-radius:30px;}
+
+  /* success overlay (scoped to phone) */
+  .overlay{position:absolute;inset:0;background:rgba(3,7,3,.94);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;z-index:50;padding:30px;}
+  .overlay.show{display:flex;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .trophy{font-size:96px;animation:pop2 .55s cubic-bezier(.2,1.5,.4,1);filter:drop-shadow(0 8px 24px rgba(240,165,0,.5));}
+  @keyframes pop2{0%{transform:scale(0) rotate(-20deg)}100%{transform:scale(1) rotate(0)}}
+  .badge{width:70px;height:70px;border-radius:50%;background:var(--brand-bright);color:#04240f;font-size:40px;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(34,224,106,.18);position:absolute;transform:translate(46px,-40px);animation:pop2 .7s cubic-bezier(.2,1.5,.4,1);}
+  .overlay h1{font-size:26px;font-weight:900;margin-top:22px;}
+  .overlay p{color:var(--ink-dim);font-size:15px;margin-top:8px;}
+  .mini-load{margin-top:20px;font-size:13px;color:var(--gold);font-weight:700;}
+  .mini-load .spin{display:inline-block;animation:flip2 1s linear infinite;}
+  @keyframes flip2{to{transform:rotate(360deg)}}
+
+  /* =============== SCREEN 4 — Watch & Win =============== */
+  .hero{text-align:center;padding:18px 20px 6px;flex:none;}
+  .hero .cash{font-size:40px;filter:drop-shadow(0 6px 14px rgba(240,165,0,.4));}
+  .hero h1{font-size:26px;font-weight:900;margin-top:6px;background:linear-gradient(90deg,var(--brand-bright),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p{color:var(--ink-dim);font-size:13px;margin-top:6px;}
+  .stage{flex:1;padding:6px 16px 26px;}
+  .video-wrap{position:relative;border-radius:18px;overflow:hidden;background:#000;border:1px solid #223022;box-shadow:0 12px 40px rgba(0,0,0,.5);aspect-ratio:16/10;}
+  video{width:100%;height:100%;object-fit:cover;display:block;background:#000;}
+  .poster{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(400px 200px at 50% 40%, rgba(34,224,106,.25), transparent 70%),linear-gradient(160deg,#0d2b16,#04120a);cursor:pointer;text-align:center;}
+  .poster.hide{display:none;}
+  .poster .logo{position:absolute;top:12px;left:14px;font-weight:900;font-size:16px;} .poster .logo b{color:var(--brand-bright);}
+  .poster .tag{position:absolute;top:14px;right:14px;background:#e11d2a;color:#fff;font-size:10px;font-weight:800;padding:4px 8px;border-radius:6px;letter-spacing:1px;}
+  .play-btn{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.12);border:2px solid var(--brand-bright);display:flex;align-items:center;justify-content:center;font-size:34px;color:#fff;box-shadow:0 0 0 8px rgba(34,224,106,.12);animation:pulse 1.6s ease infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 8px rgba(34,224,106,.12)}50%{box-shadow:0 0 0 16px rgba(34,224,106,.04)}}
+  .poster .hint{color:#dfe;font-size:13px;font-weight:700;}
+  .poster .sub{color:#9fb;font-size:11px;}
+  .timer{margin-top:14px;background:#0c110c;border:1px solid #1d271d;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+  .timer .ringbox{position:relative;width:52px;height:52px;flex:none;}
+  .timer svg{transform:rotate(-90deg);}
+  .timer .rbg{stroke:#20301f;}
+  .timer .rfg{stroke:var(--brand-bright);stroke-linecap:round;transition:stroke-dashoffset .2s linear;}
+  .timer .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;}
+  .timer .txt b{color:var(--brand-bright);} .timer .txt{font-size:13px;color:var(--ink-dim);line-height:1.5;}
+  .timer.waiting .num{color:#7c887c;}
+  .spin-section{display:none;flex-direction:column;align-items:center;text-align:center;padding-top:6px;}
+  .spin-section.show{display:flex;animation:fadeUp .4s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .spin-section h2{font-size:22px;font-weight:900;margin-bottom:2px;}
+  .spin-section .sh{color:var(--ink-dim);font-size:13px;margin-bottom:14px;}
+  .wheel-box{position:relative;width:300px;max-width:82vw;aspect-ratio:1;margin:6px auto 0;}
+  .wheel-box canvas{width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 8px #0b170b,0 0 0 12px var(--gold-deep),0 16px 50px rgba(0,0,0,.6);}
+  .pointer{position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:5;width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:28px solid var(--gold);filter:drop-shadow(0 3px 4px rgba(0,0,0,.6));}
+  .hub{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#e9e9e9);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#0b7a37;}
+  .spin-btn{margin-top:22px;height:54px;padding:0 46px;border:0;border-radius:30px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));color:#3a2600;font-size:18px;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(240,165,0,.45);letter-spacing:1px;transition:transform .1s;}
+  .spin-btn:active{transform:scale(.97);} .spin-btn:disabled{opacity:.6;cursor:not-allowed;}
+  .tc{margin-top:14px;font-size:10px;color:#6c766c;letter-spacing:1px;}
+  .win-modal{position:absolute;inset:0;background:rgba(3,7,3,.94);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;z-index:70;padding:26px;}
+  .win-modal.show{display:flex;animation:fade .35s ease;}
+  .win-card{background:linear-gradient(180deg,#0f2416,#071309);border:1px solid rgba(34,224,106,.4);border-radius:22px;padding:30px 24px;text-align:center;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .win-card .gift{font-size:80px;animation:pop2 .6s cubic-bezier(.2,1.5,.4,1);}
+  .win-card h1{font-size:24px;font-weight:900;margin-top:10px;}
+  .win-card .prize{margin-top:14px;background:rgba(0,0,0,.3);border:1px dashed var(--gold);border-radius:14px;padding:14px;}
+  .win-card .prize .p1{color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .win-card .prize .p2{font-size:22px;font-weight:900;margin-top:4px;color:#fff;}
+  .win-card p.note{color:var(--ink-dim);font-size:13px;margin-top:14px;line-height:1.5;}
+  .win-card .claim{margin-top:20px;width:100%;height:52px;border:0;border-radius:30px;background:linear-gradient(90deg,var(--brand-deep),var(--brand),var(--brand-bright));color:#fff;font-weight:800;font-size:17px;cursor:pointer;}
+
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:90;}
+</style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="phone">
+    <!-- browser chrome (URL updates per screen) -->
+    <div class="browserbar">
+      <span>🏠</span>
+      <div class="url" id="urlBar">🔒 offers.tapmad.com/wal-148</div>
+      <span>＋</span><span>⋮</span>
+    </div>
+
+    <div class="screens">
+
+      <!-- ================= SCREEN 1 ================= -->
+      <section class="screen s1 active" id="screen1" data-url="🔒 offers.tapmad.com/wal-148">
+        <div class="scroll">
+          <div class="banner">
+            <div class="flag">🇵🇰</div><div class="fireworks">🎆</div>
+            <div class="congrats">Congratulations!</div>
+            <div class="won-label">You Have Won</div>
+            <div class="prize-amount" id="prizeAmount">100,000</div>
+            <div class="prize-cur">PKR</div>
+            <div class="prize-sub">One Hundred Thousand Pakistani Rupees</div>
+            <div class="cash-emojis">💵💰💵</div>
+            <div class="lucky">⭐ You Are Our Lucky Winner! ⭐</div>
+          </div>
+          <form class="pay" onsubmit="return goVerify(event)">
+            <div class="pay-methods">
+              <div class="pm jazzcash active" onclick="pick(this)"><span class="tick">✓</span><span>Jazz<b>Cash</b></span></div>
+              <div class="pm easypaisa" onclick="pick(this)"><span class="tick">✓</span>easypaisa</div>
+              <div class="pm upaisa" onclick="pick(this)"><span class="tick">✓</span><b>U</b>paisa</div>
+            </div>
+            <div class="phone-row">
+              <span class="pill"><span class="mini">JC</span>+92</span>
+              <input type="tel" inputmode="numeric" maxlength="10" value="3021598694" aria-label="Mobile number" />
+            </div>
+            <button class="cta" type="submit">Continue</button>
+            <label class="terms"><input type="checkbox" checked /><span>I agree to <a href="#">tapmad's Terms and Conditions &amp; Auto-Renewals</a></span></label>
+            <div class="already">Already Subscribed? <a href="#">LOGIN</a></div>
+            <p class="disclaimer">Pay Now press karnay se apkay account se Rs.1 kat jayenge. Yeh offer sirf ek din ke liye valid hai, din khatam honay ke baad apkay account se automatically Rs.499/month cut hojayenge.</p>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 2 ================= -->
+      <section class="screen s2" id="screen2" data-url="🔒 tapmad.com/card/jazzcash">
+        <div class="steps">
+          <div class="caption">Step <b>1 of 3</b> — PIN set karein</div>
+          <div class="track">
+            <div class="fill" style="width:0%"></div>
+            <div class="node current"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+            <div class="node"><div class="bubble">2</div><div class="lbl">PIN</div></div>
+            <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+          </div>
+        </div>
+        <div class="center">
+          <div class="check-wrap">
+            <svg class="ring" width="130" height="130" viewBox="0 0 130 130">
+              <circle class="bg" cx="65" cy="65" r="58" fill="none" stroke-width="7"/>
+              <circle class="fg" id="verifyRing" cx="65" cy="65" r="58" fill="none" stroke-width="7" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+            </svg>
+            <div class="check">✓</div>
+          </div>
+          <h1>Step 2 ⏳ Loading</br>Please wait!</h1>
+          <p class="subtitle">Pin set karein aur entry confirm karein.</p>
+          <div class="loader-row">
+            <div class="coin">🪙</div>
+            <div class="loading-text">Aapki jeet load ho rahi hai<span class="dots"></span></div>
+            <div class="countdown"><b id="verifySecs">5</b> sec mein aage barhein…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 3 ================= -->
+      <section class="screen s3" id="screen3" data-url="🔒 tapmad.com/card/jazzcash">
+        <div class="appbar">
+          <div class="logo">tapmad</div>
+          <div class="right"><span>🔍</span><span>Login ▾</span></div>
+        </div>
+        <div class="steps">
+          <div class="caption">Step <b>2 of 3</b> — PIN set karein</div>
+          <div class="track">
+            <div class="fill" style="width:50%"></div>
+            <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+            <div class="node current"><div class="bubble">●</div><div class="lbl">PIN</div></div>
+            <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+          </div>
+        </div>
+        <form class="form" onsubmit="return submitPin(event)">
+          <h2>Set your Account Pin</h2>
+          <div class="field-label">Enter Your Name</div>
+          <input class="name-input" id="name" type="text" placeholder="Full Name" autocomplete="name" />
+          <div class="field-label" style="margin-top:22px;">Set your 4-Digit PIN</div>
+          <div class="pin-row" data-group="pin">
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+          </div>
+          <div class="field-label" style="margin-top:22px;">Confirm your PIN</div>
+          <div class="pin-row" data-group="confirm">
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+            <input class="pin-box" maxlength="1" inputmode="numeric" />
+          </div>
+          <div class="err" id="err"></div>
+          <button class="cta" type="submit">Continue</button>
+        </form>
+      </section>
+
+      <!-- ================= SCREEN 4 ================= -->
+      <section class="screen s4" id="screen4" data-url="🔒 tapmad.com">
+        <div class="steps">
+          <div class="caption">Step <b>3 of 3</b> — Watch &amp; Win</div>
+          <div class="track">
+            <div class="fill" style="width:100%"></div>
+            <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+            <div class="node done"><div class="bubble">✓</div><div class="lbl">PIN</div></div>
+            <div class="node current"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+          </div>
+        </div>
+        <div class="hero">
+          <div class="cash">💵</div>
+          <h1>Last Step! </br>Dekhte Jao, Jeet'tay Jao!</h1>
+          <p>Video dekhein — 30 second baad Spin &amp; Win khulega.</p>
+        </div>
+        <div class="stage">
+          <div id="videoStage">
+            <div class="video-wrap">
+              <video id="promo" playsinline preload="metadata"></video>
+              <div class="poster" id="poster" onclick="playVideo()">
+                <div class="logo">t<b>apmad</b></div>
+                <div class="tag">● LIVE</div>
+                <div class="play-btn">▶</div>
+                <div class="hint">Tap to Play</div>
+                <div class="sub">Timer video play karne par shuru hoga</div>
+              </div>
+            </div>
+            <div class="timer waiting" id="timerCard">
+              <div class="ringbox">
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle class="rbg" cx="26" cy="26" r="22" fill="none" stroke-width="5"/>
+                  <circle class="rfg" id="tRing" cx="26" cy="26" r="22" fill="none" stroke-width="5" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+                </svg>
+                <div class="num" id="tNum">30</div>
+              </div>
+              <div class="txt" id="tTxt"><b>Watch to unlock your Spin.</b><br>Video play karein — timer chalega, phir Spin &amp; Win aayega.</div>
+            </div>
+          </div>
+          <div class="spin-section" id="spinSection">
+            <h2>🎡 Spin &amp; Win</h2>
+            <div class="sh">Spin karein aur apna inaam jeetein!</div>
+            <div class="wheel-box">
+              <div class="pointer"></div>
+              <canvas id="wheel" width="600" height="600"></canvas>
+              <div class="hub">SPIN</div>
+            </div>
+            <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN NOW</button>
+            <div class="tc">Terms &amp; Conditions Applied!</div>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /screens -->
+
+    <!-- success overlay (screen 3) -->
+    <div class="overlay" id="overlay">
+      <div style="position:relative;display:flex;justify-content:center;">
+        <div class="trophy">🏆</div><div class="badge">✓</div>
+      </div>
+      <h1>Last Step confirm your Entry!</h1>
+      <p>Mubarak ho! Ab Watch &amp; Win khelne ke liye tayyar ho jayein.</p>
+      <div class="mini-load"><span class="spin">🎡</span> &nbsp;Loading Watch &amp; Win…</div>
+    </div>
+
+    <!-- win modal (screen 4) -->
+    <div class="win-modal" id="winModal">
+      <div class="win-card">
+        <div class="gift">🎬</div>
+        <h1>Mubarak Ho! 🎉</h1>
+        <div class="prize"><div class="p1">You Won</div><div class="p2" id="prizeText">1 Month Free tapmad Premium</div></div>
+        <p class="note">Aapki free tapmad subscription activate ho gayi hai. Ab live sports, dramas aur movies bina rukawat enjoy karein!</p>
+        <button class="claim" onclick="claim()">Claim &amp; Start Watching</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+/* ======================= CONFIG ======================= */
+const PRIZE_AMOUNT  = '100,000';
+const VERIFY_MS     = 5000;    // Screen 2 auto-advance delay (5s)
+const SUCCESS_MS    = 2000;    // Screen 3 success screen delay (2s)
+const WATCH_SECONDS = 30;      // Screen 4 watch timer
+// Placeholder clip — swap with a tapmad highlight/promo URL (mp4 or HLS .m3u8):
+const VIDEO_SRC = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+// Wheel prizes — users ALWAYS land on WIN_INDEX:
+const SEGMENTS = [
+  {label:'100,000\nPKR',            emoji:'💵'},
+  {label:'Bike',                    emoji:'🏍️'},
+  {label:'FREE tapmad\nSubscription', emoji:'🎬'},   // ← guaranteed win
+  {label:'Headphones',              emoji:'🎧'},
+  {label:'Air Buds',                emoji:'🎧'},
+  {label:'tapmad\nPremium',         emoji:'⭐'}
+];
+const WIN_INDEX   = 2;
+const PRIZE_LABEL = '1 Month Free tapmad Premium';
+/* ====================================================== */
+
+document.getElementById('prizeAmount').textContent = PRIZE_AMOUNT;
+
+/* ---------- screen router (seamless, no reloads) ---------- */
+function showScreen(id){
+  const target = document.getElementById(id);
+  const current = document.querySelector('.screen.active');
+  if(current === target) return;
+  if(current){ current.classList.remove('active'); current.classList.add('leaving'); setTimeout(()=>current.classList.remove('leaving'),450); }
+  target.classList.add('active');
+  target.scrollTop = 0;
+  document.getElementById('urlBar').textContent = target.getAttribute('data-url');
+  if(id==='screen2') startVerify();
+  if(id==='screen4') setTimeout(()=>{ try{document.getElementById('poster').classList.remove('hide');}catch(e){} }, 0);
+}
+
+/* ---------- SCREEN 1 ---------- */
+function pick(el){ document.querySelectorAll('.pm').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
+function goVerify(e){ e.preventDefault(); burst(); showScreen('screen2'); return false; }
+
+/* ---------- SCREEN 2 (5s auto-advance) ---------- */
+const V_CIRC = 364.4;
+let verifyDone = false;
+function startVerify(){
+  verifyDone = false;
+  const ring = document.getElementById('verifyRing');
+  const secs = document.getElementById('verifySecs');
+  const start = Date.now();
+  spawn(140,5);
+  const iv = setInterval(()=>{
+    if(!document.getElementById('screen2').classList.contains('active')){ clearInterval(iv); return; }
+    const el = Date.now()-start;
+    const pct = Math.min(el/VERIFY_MS,1);
+    ring.style.strokeDashoffset = V_CIRC*(1-pct);
+    secs.textContent = Math.max(0, Math.ceil((VERIFY_MS-el)/1000));
+    if(pct>=1 && !verifyDone){ verifyDone=true; clearInterval(iv); showScreen('screen3'); }
+  },80);
+}
+
+/* ---------- SCREEN 3 ---------- */
+document.querySelectorAll('.pin-row').forEach(row=>{
+  const boxes=[...row.querySelectorAll('.pin-box')];
+  boxes.forEach((b,i)=>{
+    b.addEventListener('input',()=>{ b.value=b.value.replace(/\D/g,''); if(b.value&&i<boxes.length-1)boxes[i+1].focus(); });
+    b.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!b.value&&i>0)boxes[i-1].focus(); });
+  });
+});
+function readPin(g){return [...document.querySelectorAll(`[data-group="${g}"] .pin-box`)].map(b=>b.value).join('');}
+function submitPin(e){
+  e.preventDefault();
+  const err=document.getElementById('err');
+  const name=document.getElementById('name').value.trim();
+  const pin=readPin('pin'), confirm=readPin('confirm');
+  if(!name){err.textContent='Apna naam likhein.';return false;}
+  if(pin.length<4){err.textContent='4-digit PIN set karein.';return false;}
+  if(pin!==confirm){err.textContent='PIN match nahi kar raha. Dobara try karein.';return false;}
+  err.textContent='';
+  document.getElementById('overlay').classList.add('show');
+  bigBurst();
+  setTimeout(()=>{ document.getElementById('overlay').classList.remove('show'); showScreen('screen4'); }, SUCCESS_MS);
+  return false;
+}
+
+/* ---------- SCREEN 4: video + timer ---------- */
+const video = document.getElementById('promo');
+try { video.src = VIDEO_SRC; } catch(e){}
+let timerStarted = false;
+function playVideo(){
+  document.getElementById('poster').classList.add('hide');
+  const p = video.play();
+  if(p && p.catch){ p.catch(()=>startWatchTimer()); }
+  startWatchTimer();
+}
+video.addEventListener('play', startWatchTimer);
+const T_CIRC = 138.2;
+function startWatchTimer(){
+  if(timerStarted) return;
+  timerStarted = true;
+  document.getElementById('timerCard').classList.remove('waiting');
+  document.getElementById('tTxt').innerHTML = '<b>Keep watching!</b><br>Spin & Win timer khatam hone par khulega.';
+  const ring = document.getElementById('tRing');
+  const num  = document.getElementById('tNum');
+  const start = Date.now(), total = WATCH_SECONDS*1000;
+  const iv = setInterval(()=>{
+    const el = Date.now()-start;
+    const pct = Math.min(el/total,1);
+    ring.style.strokeDashoffset = (-T_CIRC*pct);
+    num.textContent = Math.max(0, Math.ceil((total-el)/1000));
+    if(pct>=1){ clearInterval(iv); revealSpin(); }
+  },100);
+}
+function revealSpin(){
+  try{ video.pause(); }catch(e){}
+  document.getElementById('videoStage').style.display='none';
+  document.getElementById('spinSection').classList.add('show');
+  drawWheel(0);
+  spawn(60,4);
+}
+
+/* ---------- SCREEN 4: wheel ---------- */
+const wc = document.getElementById('wheel'), wctx = wc.getContext('2d');
+const R=300, CX=300, CY=300, N=SEGMENTS.length, SEG=(Math.PI*2)/N;
+const WEDGE=['#0f7a37','#1aa14c','#0f7a37','#1aa14c','#0f7a37','#1aa14c'];
+let currentRot=0;
+function drawWheel(rot){
+  wctx.clearRect(0,0,600,600);
+  for(let i=0;i<N;i++){
+    const start=i*SEG+rot, end=start+SEG;
+    wctx.beginPath();wctx.moveTo(CX,CY);wctx.arc(CX,CY,R-6,start,end);wctx.closePath();
+    wctx.fillStyle=(i===WIN_INDEX)?'#f0a500':WEDGE[i%WEDGE.length];wctx.fill();
+    wctx.lineWidth=3;wctx.strokeStyle='rgba(255,255,255,.15)';wctx.stroke();
+    wctx.save();wctx.translate(CX,CY);wctx.rotate(start+SEG/2);wctx.textAlign='right';
+    wctx.fillStyle=(i===WIN_INDEX)?'#3a2600':'#fff';wctx.font='900 26px Segoe UI, Arial';
+    const lines=SEGMENTS[i].label.split('\n');
+    lines.forEach((ln,li)=>{ wctx.fillText(ln,R-60,4+(li-(lines.length-1)/2)*28); });
+    wctx.font='34px Segoe UI, Arial';wctx.fillText(SEGMENTS[i].emoji,R-24,12);
+    wctx.restore();
+  }
+}
+let spinning=false;
+function spin(){
+  if(spinning) return; spinning=true;
+  document.getElementById('spinBtn').disabled=true;
+  const centre=WIN_INDEX*SEG+SEG/2;
+  const target=(6*Math.PI*2)+(1.5*Math.PI-centre);
+  const from=currentRot, delta=target-(from%(Math.PI*2)), dur=4200, t0=performance.now();
+  function anim(now){
+    const t=Math.min((now-t0)/dur,1), ease=1-Math.pow(1-t,3);
+    currentRot=from+delta*ease; drawWheel(currentRot);
+    if(t<1) requestAnimationFrame(anim); else { spinning=false; onWin(); }
+  }
+  requestAnimationFrame(anim);
+}
+function onWin(){
+  document.getElementById('prizeText').textContent=PRIZE_LABEL;
+  bigBurst();
+  setTimeout(()=>{ document.getElementById('winModal').classList.add('show'); bigBurst(); },500);
+}
+function claim(){ bigBurst(); document.querySelector('.claim').textContent='Activated ✓ — Enjoy tapmad!'; /* window.location.href='https://tapmad.com/home'; */ }
+
+/* ======================= Confetti ======================= */
+const cvs=document.getElementById('confetti'),ctx=cvs.getContext('2d');
+let W,H,pieces=[];const COLORS=['#22e06a','#16a34a','#ffd54f','#f0a500','#ffffff','#7CFFB2'];
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;}addEventListener('resize',resize);resize();
+function spawn(n,spread){for(let i=0;i<n;i++){pieces.push({x:Math.random()*W,y:-20-Math.random()*H*0.3,r:6+Math.random()*8,c:COLORS[(Math.random()*COLORS.length)|0],vx:(Math.random()-.5)*(spread||3),vy:2+Math.random()*4,rot:Math.random()*6.28,vr:(Math.random()-.5)*0.3,shape:Math.random()<.5?'rect':'circle'});}}
+function burst(){spawn(60,6);}
+function bigBurst(){spawn(240,7);setTimeout(()=>spawn(140,6),250);}
+function loop(){ctx.clearRect(0,0,W,H);pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;if(p.shape==='rect')ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6);else{ctx.beginPath();ctx.arc(0,0,p.r/2,0,6.28);ctx.fill();}ctx.restore();});pieces=pieces.filter(p=>p.y<H+40);requestAnimationFrame(loop);}loop();
+
+/* landing celebratory trickle */
+spawn(120,4);
+let trickle=setInterval(()=>{ if(document.getElementById('screen1').classList.contains('active')) spawn(5,4); else clearInterval(trickle); },500);
+</script>
+</body>
+</html>
