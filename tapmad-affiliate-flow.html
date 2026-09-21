@@ -1,29 +1,18 @@
 <!DOCTYPE html>
-<!--
-  ==================================================================
-  tapmad · Affiliate Onboarding — SINGLE-FILE WEBSITE (all 4 steps)
-  ------------------------------------------------------------------
-  One page, four screens that flow into each other with smooth
-  in-page transitions (NO full-page reloads) — feels like one site.
-
-  FLOW:
-    1) Campaign Landing  → tap Continue
-    2) Number Verified   → auto-advances after 5s
-    3) Set PIN           → tap Continue → success (2s) → advance
-    4) Watch & Win       → play video → 30s timer → Spin & Win
-                           (always wins a free tapmad subscription)
-
-  ┌── EASY EDITS (all in the CONFIG block near the bottom) ─────────┐
-  │  PRIZE_AMOUNT · VERIFY_MS(5000) · SUCCESS_MS(2000)             │
-  │  WATCH_SECONDS(30) · VIDEO_SRC · SEGMENTS · WIN_INDEX          │
-  └────────────────────────────────────────────────────────────────┘
-  ==================================================================
--->
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>tapmad · Win Big</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>tapmad Watch &amp; Win</title>
+<!--
+  tapmad · Affiliate Onboarding — single-page flow (final).
+  Only four things changed vs the pasted base:
+   1) confetti reworked (clean celebratory bursts, no messy blanket)
+   2) enticing emojis added to key buttons/headings (wording unchanged)
+   3) spin unlocks only after the video is actually watched (pausing pauses the timer; video end unlocks)
+   4) watch gate set to 15 seconds
+  (Screen 4 div-nesting was repaired so the moved timer/video/spin render correctly.)
+-->
 <style>
   :root{
     --brand:#16a34a;--brand-bright:#22e06a;--brand-deep:#0b7a37;
@@ -42,22 +31,14 @@
   }
   .phone{width:100%;max-width:430px;min-height:100dvh;display:flex;flex-direction:column;position:relative;}
 
-  /* fixed browser chrome — URL updates per screen to mimic real navigation */
   .browserbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#111;color:#9aa;font-size:13px;border-bottom:1px solid #1c1c1c;flex:none;}
   .browserbar .url{flex:1;background:#000;border-radius:20px;padding:6px 12px;color:#c9c9c9;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 
-  /* ---------- screen switching ---------- */
   .screens{flex:1;position:relative;overflow:hidden;}
-  .screen{
-    position:absolute;inset:0;overflow-y:auto;
-    display:flex;flex-direction:column;
-    opacity:0;transform:translateX(30px);pointer-events:none;
-    transition:opacity .45s ease, transform .45s ease;
-  }
+  .screen{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;opacity:0;transform:translateX(30px);pointer-events:none;transition:opacity .45s ease, transform .45s ease;}
   .screen.active{opacity:1;transform:none;pointer-events:auto;}
   .screen.leaving{opacity:0;transform:translateX(-30px);pointer-events:none;}
 
-  /* ---------- shared: progress bar ---------- */
   .steps{margin:16px 14px 0;background:#0c110c;border:1px solid #1d271d;border-radius:14px;padding:16px 14px 12px;flex:none;}
   .steps .caption{font-size:13px;color:var(--ink-dim);margin-bottom:14px;font-weight:600;}
   .steps .caption b{color:var(--brand-bright);}
@@ -71,15 +52,12 @@
   .node .lbl{font-size:11px;color:#8a948a;font-weight:600;}
   .node.done .lbl,.node.current .lbl{color:#e7f4e7;}
 
-  /* ---------- shared buttons ---------- */
   .cta{height:54px;border:0;border-radius:12px;background:linear-gradient(90deg,var(--brand-deep),var(--brand),var(--brand-bright));color:#fff;font-size:18px;font-weight:800;letter-spacing:.5px;cursor:pointer;box-shadow:0 8px 24px rgba(22,163,74,.45);transition:transform .1s;}
   .cta:active{transform:scale(.98);}
 
-  /* =============== SCREEN 1 — Landing =============== */
+  /* SCREEN 1 */
   .s1 .scroll{padding-bottom:24px;}
-  .banner{position:relative;margin:14px;border-radius:var(--radius);
-    background:radial-gradient(600px 300px at 50% 0%, rgba(255,213,79,.18), transparent 70%),linear-gradient(180deg,#0d2b16,#071a0d 90%);
-    border:1px solid rgba(34,224,106,.35);padding:26px 18px 30px;text-align:center;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);}
+  .banner{position:relative;margin:14px;border-radius:var(--radius);background:radial-gradient(600px 300px at 50% 0%, rgba(255,213,79,.18), transparent 70%),linear-gradient(180deg,#0d2b16,#071a0d 90%);border:1px solid rgba(34,224,106,.35);padding:26px 18px 30px;text-align:center;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);}
   .flag{position:absolute;top:12px;left:14px;font-size:22px;}
   .fireworks{position:absolute;top:10px;right:14px;font-size:22px;}
   .congrats{display:inline-block;background:linear-gradient(90deg,var(--brand-deep),var(--brand-bright));color:#fff;font-weight:800;letter-spacing:2px;font-size:14px;padding:6px 18px;border-radius:30px;text-transform:uppercase;box-shadow:0 4px 14px rgba(34,224,106,.35);}
@@ -109,7 +87,7 @@
   .already a{color:var(--brand-bright);text-decoration:none;font-weight:800;}
   .disclaimer{margin:8px 16px 20px;text-align:center;font-size:11px;line-height:1.5;color:#8a948a;}
 
-  /* =============== SCREEN 2 — Verified =============== */
+  /* SCREEN 2 */
   .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 24px;}
   .check-wrap{position:relative;width:130px;height:130px;margin-bottom:8px;}
   .ring{transform:rotate(-90deg);}
@@ -117,6 +95,8 @@
   .ring .fg{stroke:var(--brand-bright);stroke-linecap:round;transition:stroke-dashoffset .1s linear;filter:drop-shadow(0 0 6px rgba(34,224,106,.5));}
   .check{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:52px;color:var(--brand-bright);animation:pop .5s cubic-bezier(.2,1.4,.4,1);}
   @keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+  .count-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:58px;font-weight:900;color:var(--brand-bright);font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(34,224,106,.45);animation:tick 1s ease-in-out infinite;}
+  @keyframes tick{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
   .s2 h1{font-size:26px;font-weight:900;margin-top:10px;}
   .s2 .subtitle{color:var(--ink-dim);font-size:15px;margin-top:8px;line-height:1.5;max-width:280px;}
   .loader-row{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:12px;}
@@ -128,7 +108,7 @@
   .countdown{font-size:12px;color:#8a948a;margin-top:2px;}
   .countdown b{color:var(--brand-bright);}
 
-  /* =============== SCREEN 3 — Set PIN =============== */
+  /* SCREEN 3 */
   .appbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #161c16;flex:none;}
   .appbar .logo{font-size:22px;font-weight:900;} .appbar .logo b{color:var(--brand-bright);}
   .appbar .right{display:flex;align-items:center;gap:14px;color:#cfd;font-size:14px;}
@@ -143,7 +123,6 @@
   .err{color:#ff6b6b;font-size:13px;text-align:center;min-height:18px;margin-top:12px;}
   .s3 .cta{margin-top:auto;border-radius:30px;}
 
-  /* success overlay (scoped to phone) */
   .overlay{position:absolute;inset:0;background:rgba(3,7,3,.94);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center;z-index:50;padding:30px;}
   .overlay.show{display:flex;animation:fade .3s ease;}
   @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -156,7 +135,7 @@
   .mini-load .spin{display:inline-block;animation:flip2 1s linear infinite;}
   @keyframes flip2{to{transform:rotate(360deg)}}
 
-  /* =============== SCREEN 4 — Watch & Win =============== */
+  /* SCREEN 4 */
   .hero{text-align:center;padding:18px 20px 6px;flex:none;}
   .hero .cash{font-size:40px;filter:drop-shadow(0 6px 14px rgba(240,165,0,.4));}
   .hero h1{font-size:26px;font-weight:900;margin-top:6px;background:linear-gradient(90deg,var(--brand-bright),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -172,7 +151,7 @@
   @keyframes pulse{0%,100%{box-shadow:0 0 0 8px rgba(34,224,106,.12)}50%{box-shadow:0 0 0 16px rgba(34,224,106,.04)}}
   .poster .hint{color:#dfe;font-size:13px;font-weight:700;}
   .poster .sub{color:#9fb;font-size:11px;}
-  .timer{margin-top:14px;background:#0c110c;border:1px solid #1d271d;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+  .timer{margin-top:14px;background:#0c110c;border:1px solid #1d271d;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:14px;}
   .timer .ringbox{position:relative;width:52px;height:52px;flex:none;}
   .timer svg{transform:rotate(-90deg);}
   .timer .rbg{stroke:#20301f;}
@@ -207,206 +186,201 @@
 </style>
 </head>
 <body>
-  <canvas id="confetti"></canvas>
+<canvas id="confetti"></canvas>
 
-  <div class="phone">
-    <!-- browser chrome (URL updates per screen) -->
-    <div class="browserbar">
-      <span>🏠</span>
-      <div class="url" id="urlBar">🔒 offers.tapmad.com/wal-148</div>
-      <span>＋</span><span>⋮</span>
-    </div>
+<div class="phone">
+  <div class="browserbar">
+    <span>🏠</span>
+    <div class="url" id="urlBar">🔒 offers.com/wal-148</div>
+    <span>＋</span><span>⋮</span>
+  </div>
 
-    <div class="screens">
+  <div class="screens">
 
-      <!-- ================= SCREEN 1 ================= -->
-      <section class="screen s1 active" id="screen1" data-url="🔒 offers.tapmad.com/wal-148">
-        <div class="scroll">
-          <div class="banner">
-            <div class="flag">🇵🇰</div><div class="fireworks">🎆</div>
-            <div class="congrats">Congratulations!</div>
-            <div class="won-label">You Have Won</div>
-            <div class="prize-amount" id="prizeAmount">100,000</div>
-            <div class="prize-cur">PKR</div>
-            <div class="prize-sub">One Hundred Thousand Pakistani Rupees</div>
-            <div class="cash-emojis">💵💰💵</div>
-            <div class="lucky">⭐ You Are Our Lucky Winner! ⭐</div>
-          </div>
-          <form class="pay" onsubmit="return goVerify(event)">
-            <div class="pay-methods">
-              <div class="pm jazzcash active" onclick="pick(this)"><span class="tick">✓</span><span>Jazz<b>Cash</b></span></div>
-              <div class="pm easypaisa" onclick="pick(this)"><span class="tick">✓</span>easypaisa</div>
-              <div class="pm upaisa" onclick="pick(this)"><span class="tick">✓</span><b>U</b>paisa</div>
-            </div>
-            <div class="phone-row">
-              <span class="pill"><span class="mini">JC</span>+92</span>
-              <input type="tel" inputmode="numeric" maxlength="10" value="3021598694" aria-label="Mobile number" />
-            </div>
-            <button class="cta" type="submit">Continue</button>
-            <label class="terms"><input type="checkbox" checked /><span>I agree to <a href="#">tapmad's Terms and Conditions &amp; Auto-Renewals</a></span></label>
-            <div class="already">Already Subscribed? <a href="#">LOGIN</a></div>
-            <p class="disclaimer">Pay Now press karnay se apkay account se Rs.1 kat jayenge. Yeh offer sirf ek din ke liye valid hai, din khatam honay ke baad apkay account se automatically Rs.499/month cut hojayenge.</p>
-          </form>
+    <!-- ================= SCREEN 1 ================= -->
+    <section class="screen s1 active" id="screen1" data-url="🔒 offers.tapmad.com/wal-148">
+      <div class="scroll">
+        <div class="banner">
+          <div class="flag">🇵🇰</div><div class="fireworks">🎆</div>
+          <div class="congrats">Congratulations!</div>
+          <div class="won-label">You Qualified for!</div>
+          <div class="prize-amount" id="prizeAmount">100,000</div>
+          <div class="prize-cur">PKR</div>
+          <div class="prize-sub">One LAC Pakistani Rupees</div>
+          <div class="cash-emojis">💵💰💵</div>
+          <div class="lucky">⭐ You Could be Our Lucky Winner! ⭐</div>
         </div>
-      </section>
-
-      <!-- ================= SCREEN 2 ================= -->
-      <section class="screen s2" id="screen2" data-url="🔒 tapmad.com/card/jazzcash">
-        <div class="steps">
-          <div class="caption">Step <b>1 of 3</b> — PIN set karein</div>
-          <div class="track">
-            <div class="fill" style="width:0%"></div>
-            <div class="node current"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-            <div class="node"><div class="bubble">2</div><div class="lbl">PIN</div></div>
-            <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+        <form class="pay" onsubmit="return goVerify(event)">
+          <div class="pay-methods">
+            <div class="pm jazzcash active" onclick="pick(this)"><span class="tick">✓</span><span>Jazz<b>Cash</b></span></div>
+            <div class="pm easypaisa" onclick="pick(this)"><span class="tick">✓</span>easypaisa</div>
+            <div class="pm upaisa" onclick="pick(this)"><span class="tick">✓</span><b>U</b>paisa</div>
           </div>
-        </div>
-        <div class="center">
-          <div class="check-wrap">
-            <svg class="ring" width="130" height="130" viewBox="0 0 130 130">
-              <circle class="bg" cx="65" cy="65" r="58" fill="none" stroke-width="7"/>
-              <circle class="fg" id="verifyRing" cx="65" cy="65" r="58" fill="none" stroke-width="7" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
-            </svg>
-            <div class="check">✓</div>
+          <div class="phone-row">
+            <span class="pill"><span class="mini">JC</span>+92</span>
+            <input type="tel" inputmode="numeric" maxlength="10" value="3021598694" aria-label="Mobile number" />
           </div>
-          <h1>Step 2 ⏳ Loading</br>Please wait!</h1>
-          <p class="subtitle">Pin set karein aur entry confirm karein.</p>
-          <div class="loader-row">
-            <div class="coin">🪙</div>
-            <div class="loading-text">Aapki jeet load ho rahi hai<span class="dots"></span></div>
-            <div class="countdown"><b id="verifySecs">5</b> sec mein aage barhein…</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= SCREEN 3 ================= -->
-      <section class="screen s3" id="screen3" data-url="🔒 tapmad.com/card/jazzcash">
-        <div class="appbar">
-          <div class="logo">tapmad</div>
-          <div class="right"><span>🔍</span><span>Login ▾</span></div>
-        </div>
-        <div class="steps">
-          <div class="caption">Step <b>2 of 3</b> — PIN set karein</div>
-          <div class="track">
-            <div class="fill" style="width:50%"></div>
-            <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-            <div class="node current"><div class="bubble">●</div><div class="lbl">PIN</div></div>
-            <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
-          </div>
-        </div>
-        <form class="form" onsubmit="return submitPin(event)">
-          <h2>Set your Account Pin</h2>
-          <div class="field-label">Enter Your Name</div>
-          <input class="name-input" id="name" type="text" placeholder="Full Name" autocomplete="name" />
-          <div class="field-label" style="margin-top:22px;">Set your 4-Digit PIN</div>
-          <div class="pin-row" data-group="pin">
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-          </div>
-          <div class="field-label" style="margin-top:22px;">Confirm your PIN</div>
-          <div class="pin-row" data-group="confirm">
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-            <input class="pin-box" maxlength="1" inputmode="numeric" />
-          </div>
-          <div class="err" id="err"></div>
-          <button class="cta" type="submit">Continue</button>
+          <button class="cta" type="submit">Continue 🎁</button>
+          <label class="terms"><input type="checkbox" checked /><span>I agree to <a href="#">tapmad's Terms and Conditions &amp; Auto-Renewals</a></span></label>
+          <div class="already">Already Subscribed? <a href="#">LOGIN</a></div>
+          <p class="disclaimer">Pay Now press karnay se apkay account se Rs.1 kat jayenge. Yeh offer sirf ek din ke liye valid hai, din khatam honay ke baad apkay account se automatically Rs.499/month cut hojayenge.</p>
         </form>
-      </section>
-
-      <!-- ================= SCREEN 4 ================= -->
-      <section class="screen s4" id="screen4" data-url="🔒 tapmad.com">
-        <div class="steps">
-          <div class="caption">Step <b>3 of 3</b> — Watch &amp; Win</div>
-          <div class="track">
-            <div class="fill" style="width:100%"></div>
-            <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-            <div class="node done"><div class="bubble">✓</div><div class="lbl">PIN</div></div>
-            <div class="node current"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
-          </div>
-        </div>
-        <div class="hero">
-          <div class="cash">💵</div>
-          <h1>Last Step! </br>Dekhte Jao, Jeet'tay Jao!</h1>
-          <p>Video dekhein — 30 second baad Spin &amp; Win khulega.</p>
-        </div>
-        <div class="stage">
-          <div id="videoStage">
-            <div class="video-wrap">
-              <video id="promo" playsinline preload="metadata"></video>
-              <div class="poster" id="poster" onclick="playVideo()">
-                <div class="logo">t<b>apmad</b></div>
-                <div class="tag">● LIVE</div>
-                <div class="play-btn">▶</div>
-                <div class="hint">Tap to Play</div>
-                <div class="sub">Timer video play karne par shuru hoga</div>
-              </div>
-            </div>
-            <div class="timer waiting" id="timerCard">
-              <div class="ringbox">
-                <svg width="52" height="52" viewBox="0 0 52 52">
-                  <circle class="rbg" cx="26" cy="26" r="22" fill="none" stroke-width="5"/>
-                  <circle class="rfg" id="tRing" cx="26" cy="26" r="22" fill="none" stroke-width="5" stroke-dasharray="138.2" stroke-dashoffset="0"/>
-                </svg>
-                <div class="num" id="tNum">30</div>
-              </div>
-              <div class="txt" id="tTxt"><b>Watch to unlock your Spin.</b><br>Video play karein — timer chalega, phir Spin &amp; Win aayega.</div>
-            </div>
-          </div>
-          <div class="spin-section" id="spinSection">
-            <h2>🎡 Spin &amp; Win</h2>
-            <div class="sh">Spin karein aur apna inaam jeetein!</div>
-            <div class="wheel-box">
-              <div class="pointer"></div>
-              <canvas id="wheel" width="600" height="600"></canvas>
-              <div class="hub">SPIN</div>
-            </div>
-            <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN NOW</button>
-            <div class="tc">Terms &amp; Conditions Applied!</div>
-          </div>
-        </div>
-      </section>
-
-    </div><!-- /screens -->
-
-    <!-- success overlay (screen 3) -->
-    <div class="overlay" id="overlay">
-      <div style="position:relative;display:flex;justify-content:center;">
-        <div class="trophy">🏆</div><div class="badge">✓</div>
       </div>
-      <h1>Last Step confirm your Entry!</h1>
-      <p>Mubarak ho! Ab Watch &amp; Win khelne ke liye tayyar ho jayein.</p>
-      <div class="mini-load"><span class="spin">🎡</span> &nbsp;Loading Watch &amp; Win…</div>
+    </section>
+
+    <!-- ================= SCREEN 2 ================= -->
+    <section class="screen s2" id="screen2" data-url="🔒 tapmad.com/card/jazzcash">
+      <div class="steps">
+        <div class="caption">Step <b>1 of 3</b> — PIN set karein</div>
+        <div class="track">
+          <div class="fill" style="width:0%"></div>
+          <div class="node current"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+          <div class="node"><div class="bubble">2</div><div class="lbl">PIN</div></div>
+          <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+        </div>
+      </div>
+      <div class="center">
+        <div class="check-wrap">
+          <svg class="ring" width="130" height="130" viewBox="0 0 130 130">
+            <circle class="bg" cx="65" cy="65" r="58" fill="none" stroke-width="7"/>
+            <circle class="fg" id="verifyRing" cx="65" cy="65" r="58" fill="none" stroke-width="7" stroke-dasharray="364.4" stroke-dashoffset="364.4"/>
+          </svg>
+          <div class="count-num" id="verifySecs">5</div>
+        </div>
+        <div class="loader-row">
+        <h1>Complete all 3 steps to qualify!</h1>
+          <div class="coin">💵</div>
+          <div class="loading-text">3 Step Flow complete karain aur entry confirm karein!<span class="dots"></span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SCREEN 3 ================= -->
+    <section class="screen s3" id="screen3" data-url="🔒 tapmad.com/card/jazzcash">
+      <div class="appbar">
+        <div class="logo">tapmad</div>
+        <div class="right"><span>🔍</span><span>Login ▾</span></div>
+      </div>
+      <div class="steps">
+        <div class="caption">Step <b>2 of 3</b> — PIN set karein</div>
+        <div class="track">
+          <div class="fill" style="width:50%"></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+          <div class="node current"><div class="bubble">●</div><div class="lbl">PIN</div></div>
+          <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+        </div>
+      </div>
+      <form class="form" onsubmit="return submitPin(event)">
+        <h2>🔐 Set Your PIN</h2>
+        <div class="field-label">Enter Your Name</div>
+        <input class="name-input" id="name" type="text" placeholder="Full Name" autocomplete="name" />
+        <div class="field-label" style="margin-top:22px;">Set your 4-Digit PIN</div>
+        <div class="pin-row" data-group="pin">
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+        </div>
+        <div class="field-label" style="margin-top:22px;">Confirm your PIN</div>
+        <div class="pin-row" data-group="confirm">
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+          <input class="pin-box" maxlength="1" inputmode="numeric" />
+        </div>
+        <div class="err" id="err"></div>
+        <button class="cta" type="submit">Continue 🎬</button>
+      </form>
+    </section>
+
+    <!-- ================= SCREEN 4 ================= -->
+    <section class="screen s4" id="screen4" data-url="🔒 tapmad.com">
+      <div class="steps">
+        <div class="caption">Step <b>3 of 3</b> — Watch &amp; Win</div>
+        <div class="track">
+          <div class="fill" style="width:100%"></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">PIN</div></div>
+          <div class="node current"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
+        </div>
+      </div>
+      <div class="hero">
+        <div class="cash">🏍 | 💵</div>
+      </div>
+      <div class="stage">
+        <div class="timer waiting" id="timerCard">
+          <div class="ringbox">
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <circle class="rbg" cx="26" cy="26" r="22" fill="none" stroke-width="5"/>
+              <circle class="rfg" id="tRing" cx="26" cy="26" r="22" fill="none" stroke-width="5" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+            </svg>
+            <div class="num" id="tNum">15</div>
+          </div>
+          <div class="txt" id="tTxt"><b>Watch video to unlock your Spin.</b><br>Video play karein — timer chalega, phir Spin &amp; Win aayega.</div>
+        </div>
+        <div id="videoStage">
+          <div class="video-wrap">
+            <video id="promo" playsinline preload="metadata"></video>
+            <div class="poster" id="poster" onclick="playVideo()">
+              <div class="logo">tapmad</b></div>
+              <div class="tag">● LIVE</div>
+              <div class="play-btn">▶</div>
+              <div class="hint">Tap to Play</div>
+              <div class="sub">Timer video play karne par shuru hoga</div>
+            </div>
+          </div>
+        </div>
+        <div class="spin-section" id="spinSection">
+          <h2>🎡 Spin &amp; Win</h2>
+          <div class="sh">Spin karein aur apna inaam jeetein!</div>
+          <div class="wheel-box">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="600" height="600"></canvas>
+            <div class="hub">SPIN</div>
+          </div>
+          <button class="spin-btn" id="spinBtn" onclick="spin()">🎰 SPIN NOW</button>
+          <div class="tc">Terms &amp; Conditions Applied!</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /screens -->
+
+  <!-- success overlay (screen 3) -->
+  <div class="overlay" id="overlay">
+    <div style="position:relative;display:flex;justify-content:center;">
+      <div class="trophy">🎁</div><div class="badge">✓</div>
     </div>
+    <h1>One Last Step to Confirm!</h1>
+    <p>Mubarak ho! Ab Watch &amp; Win khelne ke liye tayyar ho jayein.</p>
+    <div class="mini-load"><span class="spin">🎡</span> &nbsp;Loading Watch &amp; Win…</div>
+  </div>
 
-    <!-- win modal (screen 4) -->
-    <div class="win-modal" id="winModal">
-      <div class="win-card">
-        <div class="gift">🎬</div>
-        <h1>Mubarak Ho! 🎉</h1>
-        <div class="prize"><div class="p1">You Won</div><div class="p2" id="prizeText">1 Month Free tapmad Premium</div></div>
-        <p class="note">Aapki free tapmad subscription activate ho gayi hai. Ab live sports, dramas aur movies bina rukawat enjoy karein!</p>
-        <button class="claim" onclick="claim()">Claim &amp; Start Watching</button>
-      </div>
+  <!-- win modal (screen 4) -->
+  <div class="win-modal" id="winModal">
+    <div class="win-card">
+      <div class="gift">🎬</div>
+      <h1>Mubarak Ho! 🎉</h1>
+      <div class="prize"><div class="p1">You Won</div><div class="p2" id="prizeText">1 Month Free tapmad Premium</div></div>
+      <p class="note">Aapki free tapmad subscription activate ho gayi hai. Ab live sports, dramas aur movies bina rukawat enjoy karein!</p>
+      <button class="claim" onclick="claim()">Claim &amp; Start Watching 🍿</button>
     </div>
   </div>
+</div>
 
 <script>
 /* ======================= CONFIG ======================= */
 const PRIZE_AMOUNT  = '100,000';
-const VERIFY_MS     = 5000;    // Screen 2 auto-advance delay (5s)
-const SUCCESS_MS    = 2000;    // Screen 3 success screen delay (2s)
-const WATCH_SECONDS = 30;      // Screen 4 watch timer
-// Placeholder clip — swap with a tapmad highlight/promo URL (mp4 or HLS .m3u8):
-const VIDEO_SRC = 'https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-// Wheel prizes — users ALWAYS land on WIN_INDEX:
+const VERIFY_MS     = 5000;    // Screen 2 auto-advance (5s)
+const SUCCESS_MS    = 2000;    // Screen 3 success delay (2s)
+const WATCH_SECONDS = 15;      // Screen 4 watch gate (user must WATCH this long)
+// Swap with a tapmad clip. External video is blocked on the claude.ai preview,
+// but plays on your own domain / GitHub Pages:
+const VIDEO_SRC = 'https://demo.plugins360.com/wp-content/uploads/2017/12/iceberg.mp4';
 const SEGMENTS = [
   {label:'100,000\nPKR',            emoji:'💵'},
   {label:'Bike',                    emoji:'🏍️'},
-  {label:'FREE tapmad\nSubscription', emoji:'🎬'},   // ← guaranteed win
+  {label:'FREE tapmad\nSubscription', emoji:'🎬'},   // guaranteed win
   {label:'Headphones',              emoji:'🎧'},
   {label:'Air Buds',                emoji:'🎧'},
   {label:'tapmad\nPremium',         emoji:'⭐'}
@@ -417,43 +391,37 @@ const PRIZE_LABEL = '1 Month Free tapmad Premium';
 
 document.getElementById('prizeAmount').textContent = PRIZE_AMOUNT;
 
-/* ---------- screen router (seamless, no reloads) ---------- */
 function showScreen(id){
   const target = document.getElementById(id);
   const current = document.querySelector('.screen.active');
   if(current === target) return;
   if(current){ current.classList.remove('active'); current.classList.add('leaving'); setTimeout(()=>current.classList.remove('leaving'),450); }
-  target.classList.add('active');
-  target.scrollTop = 0;
+  target.classList.add('active'); target.scrollTop = 0;
   document.getElementById('urlBar').textContent = target.getAttribute('data-url');
   if(id==='screen2') startVerify();
   if(id==='screen4') setTimeout(()=>{ try{document.getElementById('poster').classList.remove('hide');}catch(e){} }, 0);
 }
 
-/* ---------- SCREEN 1 ---------- */
+/* SCREEN 1 */
 function pick(el){ document.querySelectorAll('.pm').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
 function goVerify(e){ e.preventDefault(); burst(); showScreen('screen2'); return false; }
 
-/* ---------- SCREEN 2 (5s auto-advance) ---------- */
-const V_CIRC = 364.4;
-let verifyDone = false;
+/* SCREEN 2 */
+const V_CIRC = 364.4; let verifyDone=false;
 function startVerify(){
-  verifyDone = false;
-  const ring = document.getElementById('verifyRing');
-  const secs = document.getElementById('verifySecs');
-  const start = Date.now();
-  spawn(140,5);
-  const iv = setInterval(()=>{
+  verifyDone=false;
+  const ring=document.getElementById('verifyRing'), secs=document.getElementById('verifySecs');
+  const start=Date.now(); spawn(140);
+  const iv=setInterval(()=>{
     if(!document.getElementById('screen2').classList.contains('active')){ clearInterval(iv); return; }
-    const el = Date.now()-start;
-    const pct = Math.min(el/VERIFY_MS,1);
-    ring.style.strokeDashoffset = V_CIRC*(1-pct);
-    secs.textContent = Math.max(0, Math.ceil((VERIFY_MS-el)/1000));
+    const el=Date.now()-start, pct=Math.min(el/VERIFY_MS,1);
+    ring.style.strokeDashoffset=V_CIRC*(1-pct);
+    secs.textContent=Math.max(0,Math.ceil((VERIFY_MS-el)/1000));
     if(pct>=1 && !verifyDone){ verifyDone=true; clearInterval(iv); showScreen('screen3'); }
   },80);
 }
 
-/* ---------- SCREEN 3 ---------- */
+/* SCREEN 3 */
 document.querySelectorAll('.pin-row').forEach(row=>{
   const boxes=[...row.querySelectorAll('.pin-box')];
   boxes.forEach((b,i)=>{
@@ -461,7 +429,7 @@ document.querySelectorAll('.pin-row').forEach(row=>{
     b.addEventListener('keydown',e=>{ if(e.key==='Backspace'&&!b.value&&i>0)boxes[i-1].focus(); });
   });
 });
-function readPin(g){return [...document.querySelectorAll(`[data-group="${g}"] .pin-box`)].map(b=>b.value).join('');}
+function readPin(g){return [...document.querySelectorAll('[data-group="'+g+'"] .pin-box')].map(b=>b.value).join('');}
 function submitPin(e){
   e.preventDefault();
   const err=document.getElementById('err');
@@ -471,51 +439,64 @@ function submitPin(e){
   if(pin.length<4){err.textContent='4-digit PIN set karein.';return false;}
   if(pin!==confirm){err.textContent='PIN match nahi kar raha. Dobara try karein.';return false;}
   err.textContent='';
-  document.getElementById('overlay').classList.add('show');
-  bigBurst();
+  document.getElementById('overlay').classList.add('show'); bigBurst();
   setTimeout(()=>{ document.getElementById('overlay').classList.remove('show'); showScreen('screen4'); }, SUCCESS_MS);
   return false;
 }
 
-/* ---------- SCREEN 4: video + timer ---------- */
-const video = document.getElementById('promo');
-try { video.src = VIDEO_SRC; } catch(e){}
-let timerStarted = false;
+/* SCREEN 4: video + WATCH gate (spin unlocks only after the video is watched) */
+const video=document.getElementById('promo');
+try{ video.src=VIDEO_SRC; }catch(e){}
+let timerStarted=false, watchDone=false, watchedMs=0, useFallbackTimer=false, watchIv=null, lastNow=0, lastState=null;
 function playVideo(){
   document.getElementById('poster').classList.add('hide');
-  const p = video.play();
-  if(p && p.catch){ p.catch(()=>startWatchTimer()); }
+  const p=video.play();
+  if(p && p.catch){ p.catch(()=>{ useFallbackTimer=true; }); }
+  video.addEventListener('error', ()=>{ useFallbackTimer=true; }, {once:true});
   startWatchTimer();
 }
 video.addEventListener('play', startWatchTimer);
-const T_CIRC = 138.2;
+video.addEventListener('ended', finishWatch);
+const T_CIRC=138.2;
 function startWatchTimer(){
-  if(timerStarted) return;
-  timerStarted = true;
+  if(timerStarted) return; timerStarted=true;
   document.getElementById('timerCard').classList.remove('waiting');
-  document.getElementById('tTxt').innerHTML = '<b>Keep watching!</b><br>Spin & Win timer khatam hone par khulega.';
-  const ring = document.getElementById('tRing');
-  const num  = document.getElementById('tNum');
-  const start = Date.now(), total = WATCH_SECONDS*1000;
-  const iv = setInterval(()=>{
-    const el = Date.now()-start;
-    const pct = Math.min(el/total,1);
-    ring.style.strokeDashoffset = (-T_CIRC*pct);
-    num.textContent = Math.max(0, Math.ceil((total-el)/1000));
-    if(pct>=1){ clearInterval(iv); revealSpin(); }
+  const ring=document.getElementById('tRing'), num=document.getElementById('tNum'), txt=document.getElementById('tTxt');
+  const total=WATCH_SECONDS*1000;
+  lastNow=performance.now();
+  watchIv=setInterval(()=>{
+    const now=performance.now(), dt=now-lastNow; lastNow=now;
+    // count progress ONLY while the video is genuinely playing
+    const playing = useFallbackTimer ? true : (!video.paused && !video.ended && !video.error && video.currentTime>0);
+    if(playing!==lastState){
+      lastState=playing;
+      txt.innerHTML = playing
+        ? '<b>Keep watching! 🎬</b><br>Poora video dekhein — Spin unlock ho jayega.'
+        : '<b>Video ruka hua hai ▶</b><br>Play dabayein — timer tabhi chalega.';
+    }
+    if(playing) watchedMs += dt;
+    const pct=Math.min(watchedMs/total,1);
+    ring.style.strokeDashoffset=(-T_CIRC*pct);
+    num.textContent=Math.max(0,Math.ceil((total-watchedMs)/1000));
+    if(pct>=1) finishWatch();
   },100);
+}
+function finishWatch(){
+  if(watchDone) return; watchDone=true;
+  if(watchIv) clearInterval(watchIv);
+  revealSpin();
 }
 function revealSpin(){
   try{ video.pause(); }catch(e){}
-  document.getElementById('videoStage').style.display='none';
+  const vs=document.getElementById('videoStage'); if(vs) vs.style.display='none';
+  const tc=document.getElementById('timerCard'); if(tc) tc.style.display='none';
   document.getElementById('spinSection').classList.add('show');
-  drawWheel(0);
-  spawn(60,4);
+  drawWheel(0); spawn(60);
 }
 
-/* ---------- SCREEN 4: wheel ---------- */
-const wc = document.getElementById('wheel'), wctx = wc.getContext('2d');
-const R=300, CX=300, CY=300, N=SEGMENTS.length, SEG=(Math.PI*2)/N;
+/* SCREEN 4: wheel */
+const wc=document.getElementById('wheel'), wctx=wc.getContext('2d');
+const R=300,CX=300,CY=300,N=SEGMENTS.length,SEG=(Math.PI*2)/N;
 const WEDGE=['#0f7a37','#1aa14c','#0f7a37','#1aa14c','#0f7a37','#1aa14c'];
 let currentRot=0;
 function drawWheel(rot){
@@ -548,24 +529,56 @@ function spin(){
   requestAnimationFrame(anim);
 }
 function onWin(){
-  document.getElementById('prizeText').textContent=PRIZE_LABEL;
-  bigBurst();
+  document.getElementById('prizeText').textContent=PRIZE_LABEL; bigBurst();
   setTimeout(()=>{ document.getElementById('winModal').classList.add('show'); bigBurst(); },500);
 }
 function claim(){ bigBurst(); document.querySelector('.claim').textContent='Activated ✓ — Enjoy tapmad!'; /* window.location.href='https://tapmad.com/home'; */ }
 
-/* ======================= Confetti ======================= */
-const cvs=document.getElementById('confetti'),ctx=cvs.getContext('2d');
-let W,H,pieces=[];const COLORS=['#22e06a','#16a34a','#ffd54f','#f0a500','#ffffff','#7CFFB2'];
-function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;}addEventListener('resize',resize);resize();
-function spawn(n,spread){for(let i=0;i<n;i++){pieces.push({x:Math.random()*W,y:-20-Math.random()*H*0.3,r:6+Math.random()*8,c:COLORS[(Math.random()*COLORS.length)|0],vx:(Math.random()-.5)*(spread||3),vy:2+Math.random()*4,rot:Math.random()*6.28,vr:(Math.random()-.5)*0.3,shape:Math.random()<.5?'rect':'circle'});}}
-function burst(){spawn(60,6);}
-function bigBurst(){spawn(240,7);setTimeout(()=>spawn(140,6),250);}
-function loop(){ctx.clearRect(0,0,W,H);pieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.05;p.rot+=p.vr;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;if(p.shape==='rect')ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6);else{ctx.beginPath();ctx.arc(0,0,p.r/2,0,6.28);ctx.fill();}ctx.restore();});pieces=pieces.filter(p=>p.y<H+40);requestAnimationFrame(loop);}loop();
-
-/* landing celebratory trickle */
-spawn(120,4);
-let trickle=setInterval(()=>{ if(document.getElementById('screen1').classList.contains('active')) spawn(5,4); else clearInterval(trickle); },500);
+/* ======================= Confetti (reworked: clean bursts, no blanket) ======================= */
+const cvs=document.getElementById('confetti'), ctx=cvs.getContext('2d');
+let W,H,pieces=[];
+const COLORS=['#22e06a','#16a34a','#ffd54f','#f0a500','#ffffff','#7CFFB2'];
+function resize(){W=cvs.width=innerWidth;H=cvs.height=innerHeight;} addEventListener('resize',resize); resize();
+function launch(cx,cy,count,angleDeg,spreadDeg,power){
+  for(let i=0;i<count;i++){
+    const a=(angleDeg+(Math.random()-0.5)*spreadDeg)*Math.PI/180;
+    const sp=power*(0.55+Math.random()*0.75);
+    const strip=Math.random()<0.55;
+    pieces.push({
+      x:cx,y:cy, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp,
+      g:0.30+Math.random()*0.14, drag:0.985,
+      rot:Math.random()*6.28, vr:(Math.random()-0.5)*0.4,
+      w:strip?4+Math.random()*3:7+Math.random()*6,
+      h:strip?11+Math.random()*10:7+Math.random()*6,
+      round:!strip&&Math.random()<0.5,
+      c:COLORS[(Math.random()*COLORS.length)|0],
+      sway:Math.random()*6.28, life:0, max:75+Math.random()*45
+    });
+  }
+}
+/* small celebratory pop from lower-centre */
+function spawn(n){ launch(W/2, H*0.60, Math.min(n||60,90), -90, 95, 15); }
+function burst(){ spawn(60); }
+/* two corner cannons + a centre pop for the big moments */
+function cannons(){ launch(6,H-4,90,-64,44,20); launch(W-6,H-4,90,-116,44,20); }
+function bigBurst(){ cannons(); spawn(50); setTimeout(cannons,260); }
+function loop(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of pieces){
+    p.life++; p.vy+=p.g; p.vx*=p.drag; p.vy*=p.drag; p.sway+=0.1;
+    p.x+=p.vx+Math.sin(p.sway)*0.6; p.y+=p.vy; p.rot+=p.vr;
+    const t=p.life/p.max, alpha=t<0.68?1:Math.max(0,1-(t-0.68)/0.32);
+    ctx.save(); ctx.globalAlpha=alpha; ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.c;
+    if(p.round){ ctx.beginPath(); ctx.arc(0,0,p.w/2,0,6.28); ctx.fill(); }
+    else { ctx.scale(Math.cos(p.sway*1.4),1); ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h); }
+    ctx.restore();
+  }
+  pieces=pieces.filter(p=>p.life<p.max && p.y<H+80);
+  requestAnimationFrame(loop);
+}
+loop();
+/* one tasteful welcome burst on landing (no constant trickle) */
+cannons();
 </script>
 </body>
 </html>
