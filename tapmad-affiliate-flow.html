@@ -234,8 +234,8 @@
         <div class="caption">Step <b>1 of 3</b> — PIN set karein</div>
         <div class="track">
           <div class="fill" style="width:0%"></div>
-          <div class="node current"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-          <div class="node"><div class="bubble">2</div><div class="lbl">PIN</div></div>
+          <div class="node current"><div class="bubble">✓</div><div class="lbl">Verification</div></div>
+          <div class="node"><div class="bubble">2</div><div class="lbl">Set PIN</div></div>
           <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
         </div>
       </div>
@@ -250,7 +250,7 @@
         <div class="loader-row">
 		<h2>⌛Please wait!</h2>
         <div class="loading-text">Complete all 3 steps to qualify!<span class="dots"></span></div>
-          <div class="coin">💵</div>
+          <div class="coin">🎁</div>
 		          <p>You'll be redirected soon!</p>
         </div>
       </div>
@@ -266,8 +266,8 @@
         <div class="caption">Step <b>2 of 3</b> — PIN set karein</div>
         <div class="track">
           <div class="fill" style="width:50%"></div>
-          <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-          <div class="node current"><div class="bubble">●</div><div class="lbl">PIN</div></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">Verification</div></div>
+          <div class="node current"><div class="bubble">●</div><div class="lbl">Set PIN</div></div>
           <div class="node"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
         </div>
       </div>
@@ -300,13 +300,14 @@
         <div class="caption">Step <b>3 of 3</b> — Watch &amp; Win</div>
         <div class="track">
           <div class="fill" style="width:100%"></div>
-          <div class="node done"><div class="bubble">✓</div><div class="lbl">Number</div></div>
-          <div class="node done"><div class="bubble">✓</div><div class="lbl">PIN</div></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">Verification</div></div>
+          <div class="node done"><div class="bubble">✓</div><div class="lbl">Set PIN</div></div>
           <div class="node current"><div class="bubble">▶</div><div class="lbl">Watch &amp; Win</div></div>
         </div>
       </div>
       <div class="hero">
-        <div class="cash">🏍 | 💵</div>
+		        <h1>Watch & Win!</h1>
+      <p>Videos dekhte jao — Jeet ka maza uthao!</p>
       </div>
       <div class="stage">
         <div class="timer waiting" id="timerCard">
@@ -317,7 +318,7 @@
             </svg>
             <div class="num" id="tNum">15</div>
           </div>
-          <div class="txt" id="tTxt"><b>Watch video to unlock your Spin.</b><br>Video play karein — timer chalega, phir Spin &amp; Win aayega.</div>
+          <h1><div class="txt" id="tTxt"><b>Watch video to unlock your Spin.</b><br>Video dekho — aur jeet k chances barhao!.</div></h1>
         </div>
         <div id="videoStage">
           <div class="video-wrap">
@@ -352,7 +353,7 @@
     <div style="position:relative;display:flex;justify-content:center;">
       <div class="trophy">⚠️</div>
     </div>
-    <h1>One Last Step to Confirm!</h1>
+    <h1>One Last Step!</h1>
     <p>Mubarak ho! Ab Watch &amp; Win khelne ke liye tayyar ho jayein.</p>
     <div class="mini-load"><span class="spin">🎡</span> &nbsp;Loading Watch &amp; Win…</div>
   </div>
@@ -377,7 +378,7 @@ const SUCCESS_MS    = 2000;    // Screen 3 success delay (2s)
 const WATCH_SECONDS = 15;      // Screen 4 watch gate (user must WATCH this long)
 // Swap with a tapmad clip. External video is blocked on the claude.ai preview,
 // but plays on your own domain / GitHub Pages:
-const VIDEO_SRC = 'https://demo.plugins360.com/wp-content/uploads/2017/12/iceberg.mp4';
+const VIDEO_SRC = 'https://media.istockphoto.com/id/1752211407/video/strong-female-athlete-is-running-towards-an-obstacle-jumping-over-the-barrier-at-high-speed.mp4?s=mp4-640x640-is&k=20&c=rPwjipkHBB5Luf8czTq2mbPor1GxxlXhgfPxWruM_lE=';
 const SEGMENTS = [
   {label:'100,000\nPKR',            emoji:'💵'},
   {label:'Bike',                    emoji:'🏍️'},
@@ -405,7 +406,7 @@ function showScreen(id){
 
 /* SCREEN 1 */
 function pick(el){ document.querySelectorAll('.pm').forEach(p=>p.classList.remove('active')); el.classList.add('active'); }
-function goVerify(e){ e.preventDefault(); burst(); showScreen('screen2'); return false; }
+function goVerify(e){ e.preventDefault(); showScreen('screen2'); return false; }
 
 /* SCREEN 2 */
 const V_CIRC = 364.4; let verifyDone=false;
@@ -440,7 +441,7 @@ function submitPin(e){
   if(pin.length<4){err.textContent='4-digit PIN set karein.';return false;}
   if(pin!==confirm){err.textContent='PIN match nahi kar raha. Dobara try karein.';return false;}
   err.textContent='';
-  document.getElementById('overlay').classList.add('show'); bigBurst();
+  document.getElementById('overlay').classList.add('show'); 
   setTimeout(()=>{ document.getElementById('overlay').classList.remove('show'); showScreen('screen4'); }, SUCCESS_MS);
   return false;
 }
@@ -561,7 +562,7 @@ function launch(cx,cy,count,angleDeg,spreadDeg,power){
 function spawn(n){ launch(W/2, H*0.60, Math.min(n||60,90), -90, 95, 15); }
 function burst(){ spawn(60); }
 /* two corner cannons + a centre pop for the big moments */
-function cannons(){ launch(6,H-4,90,-64,44,20); launch(W-6,H-4,90,-116,44,20); }
+ function cannons(){ launch(6,H-4,90,-64,44,20); launch(W-6,H-4,90,-116,44,20); }
 function bigBurst(){ cannons(); spawn(50); setTimeout(cannons,260); }
 function loop(){
   ctx.clearRect(0,0,W,H);
@@ -579,7 +580,7 @@ function loop(){
 }
 loop();
 /* one tasteful welcome burst on landing (no constant trickle) */
-cannons();
+// cannons();
 </script>
 </body>
 </html>
